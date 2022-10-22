@@ -1,0 +1,18 @@
+version: "3.5"
+services:
+  mqtt-servo:
+    image: jacopomaroli/mqtt_servo:master
+    container_name: mqtt-servo
+    env_file:
+      - .env
+    environment:
+      - TZ="Europe/London"
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./src:/app
+    devices:
+      - /dev/i2c-0:/dev/i2c-0
+      - /dev/i2c-1:/dev/i2c-1
+      - /dev/i2c-2:/dev/i2c-2
+      - /dev/i2c-10:/dev/i2c-10
+      - /dev/i2c-11:/dev/i2c-11

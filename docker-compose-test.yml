@@ -1,0 +1,17 @@
+version: "3.5"
+services:
+  mqtt-servo:
+    image: jacopomaroli/mqtt_servo:master
+    container_name: mqtt-servo
+    platform: linux/arm/v6
+    entrypoint: /bin/sh
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    env_file:
+      - .env
+    environment:
+      - TZ="Europe/London"
+      - QEMU_CPU=arm1176
+    volumes:
+      - ./src:/app
+      - ./mock-cpuinfo:/cpuinfo2
