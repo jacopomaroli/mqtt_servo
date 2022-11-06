@@ -16,6 +16,9 @@ docker-run-armv6-2:
 docker-run-armv6:
 	docker-compose -f docker-compose-test.yml up
 
+docker-push:
+	docker push jacopomaroli/mqtt_servo:master
+
 save:
 	docker save --output mqtt_servo.tar jacopomaroli/mqtt_servo:master
 

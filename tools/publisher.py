@@ -20,8 +20,24 @@ client_id = f'python-mqtt-{random.randint(0, 100)}'
 
 sequence = [
     {
-        0: 125,
-        1: 125
+        0: {
+            "action": "rotate_absolute",
+            "value": 125,
+        },
+        1: {
+            "action": "rotate_absolute",
+            "value": 125,
+        }
+    },
+    {
+        0: {
+            "action": "rotate_relative",
+            "value": 10,
+        },
+        1: {
+            "action": "rotate_relative",
+            "value": -10,
+        }
     }
 ]
 

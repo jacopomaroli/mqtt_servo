@@ -22,6 +22,26 @@ password = os.environ.get('PASSWORD')
 client_id = f'python-mqtt-{random.randint(0, 100)}'
 
 
+def rotate_absolute(motor_idx, motor_angle):
+    try:
+        kit.servo[motor_idx].angle = motor_angle
+    except Exception as e:
+        print(e)
+
+
+def rotate_relative(motor_idx, motor_angle):
+    try:
+        kit.servo[motor_idx].angle += motor_angle
+    except Exception as e:
+        print(e)
+
+
+action_map = {
+    "rotate_absolute": rotate_absolute,
+    "rotate_relative": rotate_relative
+}
+
+
 def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
@@ -41,11 +61,18 @@ def subscribe(client: mqtt_client):
     def on_message(client, userdata, msg):
         msg_payload_json = msg.payload.decode()
         print(f"Received `{msg_payload_json}` from `{msg.topic}` topic")
-        msg_payload = json.loads(msg_payload_json)
+        msg_payload = {}
+        try:
+            msg_payload = json.loads(msg_payload_json)
+        except Exception as e:
+            print(e)
         for motor in msg_payload.keys():
             motor_idx = int(motor)
-            motor_angle = msg_payload[motor]
-            kit.servo[motor_idx].angle = motor_angle
+            action = msg_payload[motor]["action"]
+            value = msg_payload[motor]["value"]
+            action_fn = action_map.get(action)
+            if (action_fn):
+                action_fn(motor_idx, value)
 
     client.subscribe(topic)
     client.on_message = on_message
