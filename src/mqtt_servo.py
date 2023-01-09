@@ -42,24 +42,15 @@ action_map = {
 }
 
 
-def connect_mqtt() -> mqtt_client:
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Connected to MQTT Broker!")
-            # https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php
-            # Subscribing in on_connect() means that if we lose the connection and
-            # reconnect then subscriptions will be renewed.
-            client.subscribe(topic)
-        else:
-            print("Failed to connect, return code %d\n", rc)
-
-    client = mqtt_client.Client(client_id)
-    client.username_pw_set(username, password)
-    client.on_connect = on_connect
-    client.on_message = on_message
-    print(f"Connecting to broker \"{broker}\"...\n")
-    client.connect(broker, port)
-    return client
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected to MQTT Broker!")
+        # https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php
+        # Subscribing in on_connect() means that if we lose the connection and
+        # reconnect then subscriptions will be renewed.
+        client.subscribe(topic)
+    else:
+        print("Failed to connect, return code %d\n", rc)
 
 
 def on_message(client, userdata, msg):
@@ -77,6 +68,16 @@ def on_message(client, userdata, msg):
         action_fn = action_map.get(action)
         if (action_fn):
             action_fn(motor_idx, value)
+
+
+def connect_mqtt() -> mqtt_client:
+    client = mqtt_client.Client(client_id)
+    client.username_pw_set(username, password)
+    client.on_connect = on_connect
+    client.on_message = on_message
+    print(f"Connecting to broker \"{broker}\"...\n")
+    client.connect(broker, port)
+    return client
 
 
 def calibrate():
