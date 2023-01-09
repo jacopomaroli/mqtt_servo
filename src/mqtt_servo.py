@@ -46,36 +46,37 @@ def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
             print("Connected to MQTT Broker!")
+            # https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php
+            # Subscribing in on_connect() means that if we lose the connection and
+            # reconnect then subscriptions will be renewed.
+            client.subscribe(topic)
         else:
             print("Failed to connect, return code %d\n", rc)
 
     client = mqtt_client.Client(client_id)
     client.username_pw_set(username, password)
     client.on_connect = on_connect
+    client.on_message = on_message
     print(f"Connecting to broker \"{broker}\"...\n")
     client.connect(broker, port)
     return client
 
 
-def subscribe(client: mqtt_client):
-    def on_message(client, userdata, msg):
-        msg_payload_json = msg.payload.decode()
-        print(f"Received `{msg_payload_json}` from `{msg.topic}` topic")
-        msg_payload = {}
-        try:
-            msg_payload = json.loads(msg_payload_json)
-        except Exception as e:
-            print(e)
-        for motor in msg_payload.keys():
-            motor_idx = int(motor)
-            action = msg_payload[motor]["action"]
-            value = msg_payload[motor]["value"]
-            action_fn = action_map.get(action)
-            if (action_fn):
-                action_fn(motor_idx, value)
-
-    client.subscribe(topic)
-    client.on_message = on_message
+def on_message(client, userdata, msg):
+    msg_payload_json = msg.payload.decode()
+    print(f"Received `{msg_payload_json}` from `{msg.topic}` topic")
+    msg_payload = {}
+    try:
+        msg_payload = json.loads(msg_payload_json)
+    except Exception as e:
+        print(e)
+    for motor in msg_payload.keys():
+        motor_idx = int(motor)
+        action = msg_payload[motor]["action"]
+        value = msg_payload[motor]["value"]
+        action_fn = action_map.get(action)
+        if (action_fn):
+            action_fn(motor_idx, value)
 
 
 def calibrate():
@@ -86,7 +87,6 @@ def calibrate():
 def run():
     calibrate()
     client = connect_mqtt()
-    subscribe(client)
     client.loop_forever()
 
 
